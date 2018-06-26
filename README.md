@@ -16,7 +16,9 @@ Run server:
 
     $ node app.js
 
-Use Postman to run test collection /tests/PostmanTODO
+Use Postman to run test collection:
+
+    ./tests/FHIR STU3 Subscription channel REST hook.postman_collection.json
 
 ## Notices
 
