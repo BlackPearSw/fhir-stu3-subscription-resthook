@@ -1,0 +1,37 @@
+{
+  "name": "fhir-stu3-subscription-resthook",
+  "version": "0.0.1",
+  "description": "Reference implementation of an HL7 FHIR STU3 Subscription REST hook endpoint",
+  "keywords": [
+    "FHIR",
+    "STU3",
+    "Subscription",
+    "REST hook"
+  ],
+  "license": "LGPL-3.0+",
+  "contributors": [
+    {
+      "name": "Dunmail Hodkinson",
+      "email": "dunmail@blackpear.com"
+    },
+    {
+      "name": "Steve Reynolds",
+      "email": "steve.reynolds@blackpear.com"
+    }
+  ],
+  "bugs": {
+    "url": "https://github.com/BlackPearSw/fhir-stu3-subscription-resthook/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BlackPearSw/fhir-stu3-subscription-resthook.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "config": "^1.30.0",
+    "express": "^4.16.3"
+  }
+}

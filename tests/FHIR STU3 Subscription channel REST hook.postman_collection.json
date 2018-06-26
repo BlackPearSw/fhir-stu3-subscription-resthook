@@ -1,0 +1,499 @@
+{
+	"info": {
+		"_postman_id": "9305e5e9-fe4e-403b-89f9-eff6e33afa35",
+		"name": "FHIR STU3 Subscription channel REST hook",
+		"description": "Test cases for reference implementation of FHIR STU3 Subscription channel REST hook sending DocumentReference resources and using x-api-key for authorisation.\n\nThis uses an empty POST message to alert the subscriber that new results are available - POST to [base]/Subscription:\n\n{\n  \"resourceType\": \"Subscription\",\n  \"criteria\": \"Observation?name=http://loinc.org|1975-2&_format=json\",\n  \"channel\": {\n    \"type\": \"rest-hook\",\n    \"endpoint\": \"https://biliwatch.com/customers/mount-auburn-miu/on-result\",\n    \"header\": \"Authorization: Bearer secret-token-abc-123\"\n  }\n}\nWhen a resource is created or updated that meets the criteria, the server sends a POST request with no body to the nominated URL.\n\nWhen the subscriber receives a POST to https://biliwatch.com/customers/mount-auburn-miu/on-result, it re-issues the criteria as a query to the server, appending &_since=:last (where :last is replaced by the time at which the client last checked). In this way it can fetch all new relevant Observations.\n\nSince payload is missing, the data in the resources is only available through the REST API, which helps consolidate authorization and authentication logic. The server must append the headers, if any are given, to the POST request that it makes to the client.\n\nAlternatively, the server can be asked to send the entire resource to a nominated FHIR end-point. This is usually appropriate for defining routing rules within a managed eco-system such as a healthcare institution.\n\n{\n  \"channel\": {\n    \"type\": \"rest-hook\",\n    \"endpoint\": \"https://internal.acme.com/research/saturn\",\n    \"payload\": \"application/fhir+json\"\n  }\n}\nThis requests that a server forward a copy of any matching resource in JSON format to the nominated server as an Update operation using the nominated URL as the service base. In order to execute this channel, the server must know how to authenticate appropriately with the destination server. This can be done by the subscription resource providing an authentication header for the server to use, or alternatively, the server may be specifically configured to be able to use the nominated server.\n\nhttps://www.hl7.org/fhir/subscription.html#2.46.6.1\n",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Event notification",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "499533e1-4724-44bd-a2e5-3388aba7ef17",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "9876543210"
+					}
+				],
+				"body": {},
+				"url": {
+					"raw": "http://127.0.0.1:3000/event/123/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3000",
+					"path": [
+						"event",
+						"123",
+						""
+					]
+				},
+				"description": "When a resource is created or updated that meets the Subscription criteria, the server sends a POST request with no body to the nominated URL.\n\nhttps://www.hl7.org/fhir/subscription.html#2.46.6.1"
+			},
+			"response": []
+		},
+		{
+			"name": "Event notification (invalid endpoint)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b6f93e3a-6610-45d5-95a2-ea94c9b34544",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "9876543210"
+					}
+				],
+				"body": {},
+				"url": {
+					"raw": "http://127.0.0.1:3000/event/456/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3000",
+					"path": [
+						"event",
+						"456",
+						""
+					]
+				},
+				"description": "404 Not Found"
+			},
+			"response": []
+		},
+		{
+			"name": "Event notification (authorisation error)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "711e0ae7-6945-4ba4-afa6-40c8bca6320a",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 401\", function () {",
+							"    pm.response.to.have.status(401);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://127.0.0.1:3000/event/123/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3000",
+					"path": [
+						"event",
+						"123",
+						""
+					]
+				},
+				"description": "401 Not Authorized - authorization is required for the interaction that was attempted"
+			},
+			"response": []
+		},
+		{
+			"name": "Event notification (endpoint error)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "47ab3592-3beb-4805-a64a-dd94bdbda6bb",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 500\", function () {",
+							"    pm.response.to.have.status(500);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "9876543210"
+					}
+				],
+				"body": {},
+				"url": {
+					"raw": "http://127.0.0.1:3000/event/789/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3000",
+					"path": [
+						"event",
+						"789",
+						""
+					]
+				},
+				"description": "500 Internal Server Error"
+			},
+			"response": []
+		},
+		{
+			"name": "Resource publication",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "fae64709-d86a-4774-b3bb-ab5dbc475635",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/fhir+json"
+					},
+					{
+						"key": "x-api-key",
+						"value": "9876543210"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n                \"resourceType\": \"DocumentReference\",\n                \"id\": \"ff45b0cc-53cc-466f-ad51-8bc18bef7146\",\n                \"masterIdentifier\": {\n                    \"system\": \"https://fhir.test.com/Id/DocumentId\",\n                    \"value\": \"ff45b0cc-53cc-466f-ad51-8bc18bef7146\"\n                },\n                \"subject\": {\n                    \"identifier\": {\n                        \"system\": \"https://fhir.nhs.uk/Id/nhs-number\",\n                        \"value\": \"8068791655\"\n                    },\n                    \"display\": \"8068791655\"\n                },\n                \"author\": {\n                    \"identifier\": {\n                        \"system\": \"https://fhir.nhs.uk/Id/ods-organization-code\",\n                        \"value\": \"apitest03\"\n                    },\n                    \"display\": \"apitest03\"\n                },\n                \"custodian\": {\n                    \"identifier\": {\n                        \"system\": \"https://fhir.nhs.uk/Id/ods-organization-code\",\n                        \"value\": \"apitest03\"\n                    },\n                    \"display\": \"apitest03\"\n                },\n                \"type\": {\n                    \"coding\": [\n                        {\n                            \"system\": \"http://snomed.info/sct\",\n                            \"code\": \"163171000000105\",\n                            \"display\": \"Care Professional Documentation\"\n                        }\n                    ]\n                },\n                \"created\": \"2018-01-12T00:00:00\",\n                \"indexed\": \"2018-01-12T00:00:00\",\n                \"status\": \"current\",\n                \"description\": \"Admin Letter\",\n                \"content\": [\n                    {\n                        \"attachment\": {\n                            \"contentType\": \"image/png\",\n                            \"url\": \"https://fhir.test.com/fhir/Binary/ff45b0cc-53cc-466f-ad51-8bc18bef7146\",\n                            \"title\": \"Dummy document\"\n                        }\n                    }\n                ]\n            }"
+				},
+				"url": {
+					"raw": "http://127.0.0.1:3000/fhir/DocumentReference/ff45b0cc-53cc-466f-ad51-8bc18bef7146",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3000",
+					"path": [
+						"fhir",
+						"DocumentReference",
+						"ff45b0cc-53cc-466f-ad51-8bc18bef7146"
+					]
+				},
+				"description": "The server can be configured to send the entire resource to a nominated FHIR end-point. This is usually appropriate for defining routing rules within a managed eco-system such as a healthcare institution. The server forwards a copy of any matching resource in JSON format to the nominated server as an Update operation using the nominated URL as the service base. \n\nIf the interaction is successful, the server SHALL return either a 200 OK HTTP status code if the resource was updated, or a 201 Created status code if the resource was created, with a Last-Modified header, and an ETag header which contains the new versionId of the resource. If the resource was created (i.e. the interaction resulted in a 201 Created), the server SHOULD return a Location header (this is for HTTP conformance; it's not otherwise needed).\n\n\nhttps://www.hl7.org/fhir/http.html#update\n\n\nNB: Last-Modified and ETag not supplied"
+			},
+			"response": []
+		},
+		{
+			"name": "Resource publication (invalid endpoint)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "99b2f975-10d5-469b-8415-735c65ced8a5",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/fhir+json"
+					},
+					{
+						"key": "x-api-key",
+						"value": "9876543210"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n                \"resourceType\": \"DocumentReference\",\n                \"id\": \"ff45b0cc-53cc-466f-ad51-8bc18bef7146\",\n                \"masterIdentifier\": {\n                    \"system\": \"https://fhir.test.com/Id/DocumentId\",\n                    \"value\": \"ff45b0cc-53cc-466f-ad51-8bc18bef7146\"\n                },\n                \"subject\": {\n                    \"reference\": \"https://demographics.spineservices.nhs.uk/FHIR/Patient/8068791655\",\n                    \"identifier\": {\n                        \"system\": \"https://fhir.nhs.uk/Id/nhs-number\",\n                        \"value\": \"8068791655\"\n                    },\n                    \"display\": \"8068791655\"\n                },\n                \"author\": {\n                    \"reference\": \"https://directory.spineservices.nhs.uk/FHIR/Organization/apitest03\",\n                    \"identifier\": {\n                        \"system\": \"https://fhir.nhs.uk/Id/ods-organization-code\",\n                        \"value\": \"apitest03\"\n                    },\n                    \"display\": \"apitest03\"\n                },\n                \"custodian\": {\n                    \"reference\": \"https://directory.spineservices.nhs.uk/FHIR/Organization/apitest03\",\n                    \"identifier\": {\n                        \"system\": \"https://fhir.nhs.uk/Id/ods-organization-code\",\n                        \"value\": \"apitest03\"\n                    },\n                    \"display\": \"apitest03\"\n                },\n                \"type\": {\n                    \"coding\": [\n                        {\n                            \"system\": \"http://snomed.info/sct\",\n                            \"code\": \"163171000000105\",\n                            \"display\": \"Care Professional Documentation\"\n                        }\n                    ]\n                },\n                \"created\": \"2018-01-12T00:00:00\",\n                \"indexed\": \"2018-01-12T00:00:00\",\n                \"status\": \"current\",\n                \"description\": \"Admin Letter\",\n                \"content\": [\n                    {\n                        \"attachment\": {\n                            \"contentType\": \"image/png\",\n                            \"url\": \"https://fhir.test.com/fhir/Binary/ff45b0cc-53cc-466f-ad51-8bc18bef7146\",\n                            \"title\": \"Dummy document\"\n                        }\n                    }\n                ]\n            }"
+				},
+				"url": {
+					"raw": "http://127.0.0.1:3000/invalid/DocumentReference/ff45b0cc-53cc-466f-ad51-8bc18bef7146",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3000",
+					"path": [
+						"invalid",
+						"DocumentReference",
+						"ff45b0cc-53cc-466f-ad51-8bc18bef7146"
+					]
+				},
+				"description": "404 Not Found - resource type not supported, or not a FHIR end-point\n\nhttps://www.hl7.org/fhir/http.html#2.21.0.10.1"
+			},
+			"response": []
+		},
+		{
+			"name": "Resource publication (authorisation error)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "1840208f-b710-4bab-8b96-66585e4e9615",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 401\", function () {",
+							"    pm.response.to.have.status(401);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/fhir+json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n                \"resourceType\": \"DocumentReference\",\n                \"id\": \"ff45b0cc-53cc-466f-ad51-8bc18bef7146\",\n                \"masterIdentifier\": {\n                    \"system\": \"https://fhir.test.com/Id/DocumentId\",\n                    \"value\": \"ff45b0cc-53cc-466f-ad51-8bc18bef7146\"\n                },\n                \"subject\": {\n                    \"identifier\": {\n                        \"system\": \"https://fhir.nhs.uk/Id/nhs-number\",\n                        \"value\": \"8068791655\"\n                    },\n                    \"display\": \"8068791655\"\n                },\n                \"author\": {\n                    \"identifier\": {\n                        \"system\": \"https://fhir.nhs.uk/Id/ods-organization-code\",\n                        \"value\": \"apitest03\"\n                    },\n                    \"display\": \"apitest03\"\n                },\n                \"custodian\": {\n                    \"identifier\": {\n                        \"system\": \"https://fhir.nhs.uk/Id/ods-organization-code\",\n                        \"value\": \"apitest03\"\n                    },\n                    \"display\": \"apitest03\"\n                },\n                \"type\": {\n                    \"coding\": [\n                        {\n                            \"system\": \"http://snomed.info/sct\",\n                            \"code\": \"163171000000105\",\n                            \"display\": \"Care Professional Documentation\"\n                        }\n                    ]\n                },\n                \"created\": \"2018-01-12T00:00:00\",\n                \"indexed\": \"2018-01-12T00:00:00\",\n                \"status\": \"current\",\n                \"description\": \"Admin Letter\",\n                \"content\": [\n                    {\n                        \"attachment\": {\n                            \"contentType\": \"image/png\",\n                            \"url\": \"https://fhir.test.com/fhir/Binary/ff45b0cc-53cc-466f-ad51-8bc18bef7146\",\n                            \"title\": \"Dummy document\"\n                        }\n                    }\n                ]\n            }"
+				},
+				"url": {
+					"raw": "http://127.0.0.1:3000/invalid/DocumentReference/ff45b0cc-53cc-466f-ad51-8bc18bef7146",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3000",
+					"path": [
+						"invalid",
+						"DocumentReference",
+						"ff45b0cc-53cc-466f-ad51-8bc18bef7146"
+					]
+				},
+				"description": "401 Not Authorized - authorization is required for the interaction that was attempted\n\nhttps://www.hl7.org/fhir/http.html#2.21.0.10.1"
+			},
+			"response": []
+		},
+		{
+			"name": "Resource publication (endpoint error)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "5599cc7d-7d19-4cd8-bf5a-710cd80c1e35",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 500\", function () {",
+							"    pm.response.to.have.status(500);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/fhir+json"
+					},
+					{
+						"key": "x-api-key",
+						"value": "9876543210"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n                \"resourceType\": \"DocumentReference\",\n                \"id\": \"err-id\",\n                \"masterIdentifier\": {\n                    \"system\": \"https://fhir.test.com/Id/DocumentId\",\n                    \"value\": \"err-id\"\n                },\n                \"subject\": {\n                    \"identifier\": {\n                        \"system\": \"https://fhir.nhs.uk/Id/nhs-number\",\n                        \"value\": \"8068791655\"\n                    },\n                    \"display\": \"8068791655\"\n                },\n                \"author\": {\n                    \"identifier\": {\n                        \"system\": \"https://fhir.nhs.uk/Id/ods-organization-code\",\n                        \"value\": \"apitest03\"\n                    },\n                    \"display\": \"apitest03\"\n                },\n                \"custodian\": {\n                    \"identifier\": {\n                        \"system\": \"https://fhir.nhs.uk/Id/ods-organization-code\",\n                        \"value\": \"apitest03\"\n                    },\n                    \"display\": \"apitest03\"\n                },\n                \"type\": {\n                    \"coding\": [\n                        {\n                            \"system\": \"http://snomed.info/sct\",\n                            \"code\": \"163171000000105\",\n                            \"display\": \"Care Professional Documentation\"\n                        }\n                    ]\n                },\n                \"created\": \"2018-01-12T00:00:00\",\n                \"indexed\": \"2018-01-12T00:00:00\",\n                \"status\": \"current\",\n                \"description\": \"Admin Letter\",\n                \"content\": [\n                    {\n                        \"attachment\": {\n                            \"contentType\": \"image/png\",\n                            \"url\": \"https://fhir.test.com/fhir/Binary/ff45b0cc-53cc-466f-ad51-8bc18bef7146\",\n                            \"title\": \"Dummy document\"\n                        }\n                    }\n                ]\n            }"
+				},
+				"url": {
+					"raw": "http://127.0.0.1:3000/fhir/DocumentReference/err-id",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3000",
+					"path": [
+						"fhir",
+						"DocumentReference",
+						"err-id"
+					]
+				},
+				"description": "500 Internal Server Error"
+			},
+			"response": []
+		},
+		{
+			"name": "Resource publication (inconsistent id)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "06ec38df-db66-4d78-9db3-3b03f9430038",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/fhir+json"
+					},
+					{
+						"key": "x-api-key",
+						"value": "9876543210"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n                \"resourceType\": \"DocumentReference\",\n                \"id\": \"inconsistent-id\",\n                \"masterIdentifier\": {\n                    \"system\": \"https://fhir.test.com/Id/DocumentId\",\n                    \"value\": \"ff45b0cc-53cc-466f-ad51-8bc18bef7146\"\n                },\n                \"subject\": {\n                    \"identifier\": {\n                        \"system\": \"https://fhir.nhs.uk/Id/nhs-number\",\n                        \"value\": \"8068791655\"\n                    },\n                    \"display\": \"8068791655\"\n                },\n                \"author\": {\n                    \"identifier\": {\n                        \"system\": \"https://fhir.nhs.uk/Id/ods-organization-code\",\n                        \"value\": \"apitest03\"\n                    },\n                    \"display\": \"apitest03\"\n                },\n                \"custodian\": {\n                    \"identifier\": {\n                        \"system\": \"https://fhir.nhs.uk/Id/ods-organization-code\",\n                        \"value\": \"apitest03\"\n                    },\n                    \"display\": \"apitest03\"\n                },\n                \"type\": {\n                    \"coding\": [\n                        {\n                            \"system\": \"http://snomed.info/sct\",\n                            \"code\": \"163171000000105\",\n                            \"display\": \"Care Professional Documentation\"\n                        }\n                    ]\n                },\n                \"created\": \"2018-01-12T00:00:00\",\n                \"indexed\": \"2018-01-12T00:00:00\",\n                \"status\": \"current\",\n                \"description\": \"Admin Letter\",\n                \"content\": [\n                    {\n                        \"attachment\": {\n                            \"contentType\": \"image/png\",\n                            \"url\": \"https://fhir.test.com/fhir/Binary/ff45b0cc-53cc-466f-ad51-8bc18bef7146\",\n                            \"title\": \"Dummy document\"\n                        }\n                    }\n                ]\n            }"
+				},
+				"url": {
+					"raw": "http://127.0.0.1:3000/fhir/DocumentReference/ff45b0cc-53cc-466f-ad51-8bc18bef7146",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3000",
+					"path": [
+						"fhir",
+						"DocumentReference",
+						"ff45b0cc-53cc-466f-ad51-8bc18bef7146"
+					]
+				},
+				"description": "400 Bad Request - resource could not be parsed or failed basic FHIR validation rules (or multiple matches were found for conditional criteria)\n\nThe request body SHALL be a Resource with an id element that has an identical value to the [id] in the URL. If no id element is provided, or the value is wrong, the server SHALL respond with an HTTP 400 error code.\n\nhttps://www.hl7.org/fhir/http.html#2.21.0.10.1"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "ee85e3a8-e68d-4e93-b633-dca526a384cc",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "e90a45fc-5bbf-455f-a39d-78e989f53d50",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
