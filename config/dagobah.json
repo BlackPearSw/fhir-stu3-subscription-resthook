@@ -1,0 +1,13 @@
+{
+  "service": {
+    "name": "FHIR STU3 Subscription channel REST hook reference endpoint",
+    "base": "/",
+    "port": 3000
+  },
+  "auth": {
+    "apikey": {
+      "header": "x-api-key",
+      "value": "9876543210"
+    }
+  }
+}
