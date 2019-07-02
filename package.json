@@ -1,6 +1,6 @@
 {
   "name": "fhir-stu3-subscription-resthook",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Reference implementation of an HL7 FHIR STU3 Subscription REST hook endpoint",
   "keywords": [
     "FHIR",
@@ -33,5 +33,8 @@
     "body-parser": "^1.18.3",
     "config": "^1.30.0",
     "express": "^4.16.3"
+  },
+  "scripts": {
+    "start": "node app"
   }
 }

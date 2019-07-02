@@ -1,0 +1,55 @@
+{
+  "resourceType": "CapabilityStatement",
+  "version": "1.0.0",
+  "name": "Subscription-resthook-CapabilityStatement",
+  "status": "active",
+  "experimental": true,
+  "date": "2019-06-26",
+  "publisher": "Black Pear Software Ltd",
+  "contact": [
+    {
+      "name": "Black Pear Software Ltd",
+      "telecom": [
+        {
+          "system": "email",
+          "value": "info@blackpear.com",
+          "use": "work"
+        }
+      ]
+    }
+  ],
+  "kind": "instance",
+  "software": {
+    "name": "",
+    "version": ""
+  },
+  "fhirVersion": "3.0.1",
+  "acceptUnknown": "no",
+  "format": [
+    "application/fhir+json"
+  ],
+  "rest": [
+    {
+      "mode": "server"
+    },
+    {
+      "security": {
+        "cors": true
+      }
+    },
+    {
+      "resource": [
+        {
+          "interaction": [
+            {
+              "code": "update"
+            }
+          ],
+          "type": "documentReference",
+          "versioning": "no-version",
+          "updateCreate": true
+        }
+      ]
+    }
+  ]
+}
