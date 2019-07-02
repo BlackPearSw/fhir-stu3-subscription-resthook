@@ -1,0 +1,24 @@
+{
+    "apps": [
+        {
+            "name": "restHook",
+            "script": "app.js",
+            "cwd": "/home/pm2user/service/source",
+            "exec_mode": "cluster",
+            "instances": "max",
+            "env_dagobah": {
+                "NODE_ENV": "dagobah"
+            },
+            "env_endor": {
+                "NODE_ENV": "endor"
+            },
+            "env_tatooine": {
+                "NODE_ENV": "tatooine"
+            },
+            "merge_logs"      : true,
+            "error_file"      : "/home/pm2user/logs/error.log",
+            "out_file"        : "/home/pm2user/logs/out.log",
+            "log_date_format" : "YYYY-MM-DD HH:mm:ss Z"
+        }
+    ]
+}
